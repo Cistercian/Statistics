@@ -23,7 +23,6 @@
 
 
     <mvc:view-controller path="/index.html" view-name="/index"/>
-    <mvc:view-controller path="/admin.html" view-name="/admin/admin"/>
 
     <bean id="messageSource"
           class="org.springframework.context.support.ReloadableResourceBundleMessageSource">

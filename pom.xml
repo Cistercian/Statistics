@@ -8,14 +8,19 @@
     <artifactId>Statistics</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <!--добавить maven-war-plugin с помощтю которого мы сможем отключить необходимость web.xml файла-->
-    <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <configuration>
-            <failOnMissingWebXml>false</failOnMissingWebXml>
-        </configuration>
-    </plugin>
+    <!--добавить maven-war-plugin с помощью которого мы сможем отключить необходимость
+        web_removed.xml файла-->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <properties>
         <hibernate-version>5.0.1.Final</hibernate-version>

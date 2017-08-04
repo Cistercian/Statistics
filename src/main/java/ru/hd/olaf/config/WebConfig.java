@@ -13,7 +13,7 @@ import javax.servlet.ServletRegistration;
 
 /**
  * Created by d.v.hozyashev on 03.08.2017.
- * Класс для регистрации в спринге конфигурации
+ * Класс для регистрации конфигурации в спринге
  *
  * Аналог web.xml
  */
@@ -23,15 +23,17 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
         //create the root Spring application context
+        //аналог <context-param>
         AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
-        rootContext.register(ApplicationConfig.class, SecurityConfig.class);
+        rootContext.register(DataConfig.class);
 
-        //аналог <listener><listener-class></listener-class></listener>
+        //аналог <listener>
         servletContext.addListener(new ContextLoaderListener(rootContext));
 
         //Create the dispatcher servlet's Spring application context
+        //аналог <servlet>
         AnnotationConfigWebApplicationContext servletAppContext = new AnnotationConfigWebApplicationContext();
-        servletAppContext.register(MVCConfig.class);
+        servletAppContext.register(MvcConfig.class);
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet(servletAppContext);
         // throw NoHandlerFoundException to controller ExceptionHandler.class. Used for <error-page> analogue
@@ -39,10 +41,12 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
 
         //register and map the dispatcher servlet
         //note Dispatcher servlet with constructor arguments
+        //аналог <servlet-mapping>
         ServletRegistration.Dynamic dispatcher = servletContext.addServlet("dispatcher", dispatcherServlet);
         dispatcher.setLoadOnStartup(1);
         dispatcher.addMapping("/");
 
+        //аналог <filter>
         FilterRegistration.Dynamic encodingFilter = servletContext.addFilter("encoding-filter", new CharacterEncodingFilter());
         encodingFilter.setInitParameter("encoding", "UTF-8");
         encodingFilter.setInitParameter("forceEncoding", "true");
@@ -60,7 +64,6 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
     @Override
     protected Class<?>[] getServletConfigClasses() {
         return new Class<?>[]{
-                WebConfig_2.class
         };
     }
 
