@@ -44,7 +44,6 @@ public class TopicParser {
                             .getElementsByClass("b-comment__user").get(0)
                             .getElementsByTag("a").get(0);
 
-
                     String userProfile = userBranch.attr("href");
                     String userName = userBranch.getElementsByTag("span").get(0).text();
 

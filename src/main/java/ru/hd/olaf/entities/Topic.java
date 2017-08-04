@@ -1,5 +1,7 @@
 package ru.hd.olaf.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.*;
 import java.util.Set;
 
@@ -13,7 +15,7 @@ public class Topic {
     private String URL;                 //URL топика
     private String title;               //тема топика
     private User author;                //автор
-    private Set<User> commentators;     //комментаторы
+    private Set<Comment> comments;
 
     @Id
     @Column(name = "ID", nullable = false, unique = true)
@@ -48,7 +50,7 @@ public class Topic {
 
     @ManyToOne
     @JoinColumn(name = "author")
-    //@JsonBackReference
+    @JsonBackReference
     public User getAuthor() {
         return author;
     }
@@ -57,16 +59,13 @@ public class Topic {
         this.author = author;
     }
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "user_topic", catalog = "parsed_site", joinColumns = {
-            @JoinColumn(name = "TOPIC_ID", nullable = false, updatable = true)},
-            inverseJoinColumns = {@JoinColumn(name = "USER_ID",
-                    nullable = false, updatable = true)})
-    public Set<User> getCommentators() {
-        return commentators;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    @JsonBackReference
+    public Set<Comment> getComments() {
+        return comments;
     }
 
-    public void setCommentators(Set<User> commentators) {
-        this.commentators = commentators;
+    public void setComments(Set<Comment> comments) {
+        this.comments = comments;
     }
 }

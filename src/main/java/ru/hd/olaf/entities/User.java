@@ -1,5 +1,7 @@
 package ru.hd.olaf.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.*;
 import java.util.Set;
 
@@ -12,7 +14,7 @@ public class User {
     private Integer id;                     //первичный ключ
     private String username;                //имя пользователя
     private Set<Topic> writtenTopics;       //топики, где пользователь автор
-    private Set<Topic> commentedTopics;     //топики, где пользователь оставил комментарии
+    private Set<Comment> comments;
 
     @Id
     @Column(name = "ID", nullable = false, unique = true)
@@ -36,7 +38,7 @@ public class User {
     }
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "author", cascade = CascadeType.REMOVE, orphanRemoval = false)
-    //@JsonBackReference
+    @JsonBackReference
     public Set<Topic> getWrittenTopics() {
         return writtenTopics;
     }
@@ -45,16 +47,13 @@ public class User {
         this.writtenTopics = writtenTopics;
     }
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "user_topic", catalog = "parsed_site", joinColumns = {
-            @JoinColumn(name = "USER_ID", nullable = false, updatable = true)},
-            inverseJoinColumns = {@JoinColumn(name = "TOPIC_ID",
-                    nullable = false, updatable = true)})
-    public Set<Topic> getCommentedTopics() {
-        return commentedTopics;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    @JsonBackReference
+    public Set<Comment> getComments() {
+        return comments;
     }
 
-    public void setCommentedTopics(Set<Topic> commentedTopics) {
-        this.commentedTopics = commentedTopics;
+    public void setComments(Set<Comment> comments) {
+        this.comments = comments;
     }
 }

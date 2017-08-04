@@ -2,7 +2,6 @@ package ru.hd.olaf.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -12,7 +11,6 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.Properties;
@@ -80,7 +78,7 @@ public class DataConfig {
         jpaProperties.put("hibernate.show_sql",true);
         jpaProperties.put("hibernate.connection.driver_class","com.mysql.jdbc.Driver");
         jpaProperties.put("hibernate.dialect","org.hibernate.dialect.MySQL5Dialect");
-        jpaProperties.put("hibernate.hbm2ddl.auto","update");
+        jpaProperties.put("hibernate.hbm2ddl.auto","create");
         jpaProperties.put("hibernate.jdbc.batch_size","50");
         jpaProperties.put("hibernate.connection.CharSet","utf8");
         jpaProperties.put("hibernate.connection.characterEncoding","utf8");
