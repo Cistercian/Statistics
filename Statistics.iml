@@ -12,29 +12,6 @@
         </sourceRoots>
       </configuration>
     </facet>
-    <facet type="Spring" name="Spring">
-      <configuration>
-        <fileset id="web application context" name="MVC application context" removed="true">
-          <file>file://$MODULE_DIR$/src/main/web/WEB-INF/config/appconfig-root.xml</file>
-        </fileset>
-        <fileset id="web dispatcher servlet context" name="MVC dispatcher servlet context" removed="true" />
-      </configuration>
-    </facet>
-    <facet type="hibernate" name="Hibernate">
-      <configuration>
-        <datasource-map />
-        <naming-strategy-map />
-      </configuration>
-    </facet>
-    <facet type="jpa" name="JPA">
-      <configuration>
-        <setting name="validation-enabled" value="true" />
-        <setting name="provider-name" value="Hibernate" />
-        <datasource-mapping>
-          <factory-entry name="applicationHibernate" value="cd6080af-8d84-491c-9c97-357bbb2669aa" />
-        </datasource-mapping>
-      </configuration>
-    </facet>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/target/classes" />
