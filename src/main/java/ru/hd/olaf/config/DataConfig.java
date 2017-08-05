@@ -74,11 +74,11 @@ public class DataConfig {
 
         //аналог persistence.xml
         Properties jpaProperties = new Properties();
-        jpaProperties.put("hibernate.format_sql","false");
         jpaProperties.put("hibernate.show_sql",true);
+        jpaProperties.put("hibernate.format_sql",true);
         jpaProperties.put("hibernate.connection.driver_class","com.mysql.jdbc.Driver");
         jpaProperties.put("hibernate.dialect","org.hibernate.dialect.MySQL5Dialect");
-        jpaProperties.put("hibernate.hbm2ddl.auto","create");
+        jpaProperties.put("hibernate.hbm2ddl.auto","update");
         jpaProperties.put("hibernate.jdbc.batch_size","50");
         jpaProperties.put("hibernate.connection.CharSet","utf8");
         jpaProperties.put("hibernate.connection.characterEncoding","utf8");

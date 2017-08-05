@@ -3,6 +3,7 @@ package ru.hd.olaf.entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -14,8 +15,16 @@ public class Topic {
     private Integer id;                 //первичный ключ
     private String URL;                 //URL топика
     private String title;               //тема топика
+    private Integer topicId;             //id топика
     private User author;                //автор
-    private Set<Comment> comments;
+    private Set<Comment> comments = new HashSet<Comment>();
+
+    public Topic() {
+    }
+
+    public Topic(Integer topicId) {
+        this.topicId = topicId;
+    }
 
     @Id
     @Column(name = "ID", nullable = false, unique = true)
@@ -48,6 +57,16 @@ public class Topic {
         this.title = title;
     }
 
+    @Basic
+    @Column(name = "topic_id")
+    public Integer getTopicId() {
+        return topicId;
+    }
+
+    public void setTopicId(Integer topicId) {
+        this.topicId = topicId;
+    }
+
     @ManyToOne
     @JoinColumn(name = "author")
     @JsonBackReference
@@ -59,7 +78,7 @@ public class Topic {
         this.author = author;
     }
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = false)
     @JsonBackReference
     public Set<Comment> getComments() {
         return comments;
@@ -67,5 +86,17 @@ public class Topic {
 
     public void setComments(Set<Comment> comments) {
         this.comments = comments;
+    }
+
+    @Override
+    public String toString() {
+        return "Topic{" +
+                "id=" + id +
+                ", URL='" + (URL != null ? URL : "") + '\'' +
+                ", title='" + (title != null ? title : "") + '\'' +
+                ", topicId=" + (topicId != null ? topicId : "n/a") +
+                ", author=" + (author != null ? author : "") +
+                ", comments=" + (comments != null ? comments : "") +
+                '}';
     }
 }

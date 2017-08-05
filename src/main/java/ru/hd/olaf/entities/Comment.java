@@ -13,6 +13,14 @@ public class Comment {
     private User user;
     private Integer commentId;
 
+    public Comment() {
+    }
+
+    public Comment(User user, Integer commentId) {
+        this.user = user;
+        this.commentId = commentId;
+    }
+
     @Id
     @Column(name = "ID", nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,12 +53,35 @@ public class Comment {
     }
 
     @Basic
-    @Column(name = "comment_id", nullable = false)
+    @Column(name = "comment_id", nullable = true)
     public Integer getCommentId() {
         return commentId;
     }
 
     public void setCommentId(Integer commentId) {
         this.commentId = commentId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Comment comment = (Comment) o;
+
+        if (id != null ? !id.equals(comment.id) : comment.id != null) return false;
+        if (topic != null ? !topic.equals(comment.topic) : comment.topic != null) return false;
+        if (user != null ? !user.equals(comment.user) : comment.user != null) return false;
+        return commentId != null ? commentId.equals(comment.commentId) : comment.commentId == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (topic != null ? topic.hashCode() : 0);
+        result = 31 * result + (user != null ? user.hashCode() : 0);
+        result = 31 * result + (commentId != null ? commentId.hashCode() : 0);
+        return result;
     }
 }
