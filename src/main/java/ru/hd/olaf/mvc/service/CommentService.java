@@ -9,4 +9,5 @@ public interface CommentService {
 
     Comment save(Comment comment);
 
+    Integer getTotalCount();
 }

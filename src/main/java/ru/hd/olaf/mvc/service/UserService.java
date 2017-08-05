@@ -13,4 +13,8 @@ public interface UserService {
 
     User save(User user);
 
+    User findOrCreate(String username);
+
+    Integer getTotalCount();
+
 }

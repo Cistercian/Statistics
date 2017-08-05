@@ -1,7 +1,7 @@
 package ru.hd.olaf.mvc.repository;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
 import ru.hd.olaf.entities.User;
 
 /**
@@ -9,4 +9,8 @@ import ru.hd.olaf.entities.User;
  */
 public interface UserRepository extends CrudRepository<User, Integer> {
 
+    User findByUsername(String username);
+
+    @Query("SELECT COUNT(id) FROM User ")
+    Integer getTotalCount();
 }

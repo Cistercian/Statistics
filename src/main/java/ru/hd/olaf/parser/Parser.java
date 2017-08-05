@@ -29,65 +29,70 @@ public class Parser {
 
     private static final Logger logger = LoggerFactory.getLogger(Parser.class);
 
-    private static final String INDEX_URL = "https://pikabu.ru/hot";
+    private static final String INDEX_URL = "https://pikabu.ru/hot?page=";
 
     private static final String CLASSNAME_USER = "b-comment";
 
-    private static final short COUNT_SCAN = 2;
+    private static final short COUNT_SCAN = 3;
 
     public static void parsingIndexPage(EntityManager entityManager, UserService userService, TopicService topicService, CommentService commentService) {
         logger.debug(LogUtil.getMethodName());
 
-        short count = 0;
-
         try {
-            Document document = Jsoup.connect(INDEX_URL).get();
+            for (short countPages = 1; countPages <= COUNT_SCAN; countPages++) {
 
-            Elements stories = document.select("div.story");
+                Document document = Jsoup.connect(INDEX_URL + countPages).get();
 
-            for (Element story : stories) {
+                Elements stories = document.select("div.story");
 
-                if (++count > COUNT_SCAN) {
-                    return;
-                }
+                for (Element story : stories) {
 
-                try {
-                    logger.debug(String.format("Обрабатывается история с id: %s", story.attr("data-story-id")));
-                    Integer storyId = Integer.parseInt(story.attr("data-story-id"));
+                    try {
+                        Thread.sleep((long) Math.random() * (long) 5000);
 
-                    Topic topic = topicService.findOrCreateByTopicId(storyId);
+                        logger.debug(String.format("Обрабатывается история с id: %s", story.attr("data-story-id")));
+                        Integer storyId = Integer.parseInt(story.attr("data-story-id"));
 
-                    Element storyHeader = story.getElementsByClass("story__header-title").get(0)
-                            .getElementsByTag("a").get(0);
+                        Topic topic = topicService.findOrCreateByTopicId(storyId);
 
-                    topic.setTitle(storyHeader.text());
-                    topic.setURL(storyHeader.attr("href"));
+                        Element storyHeader = story.getElementsByClass("story__header-title").get(0)
+                                .getElementsByTag("a").get(0);
 
-                    //поиск автора
-                    storyHeader = story.getElementsByClass("story__author").get(0);
+                        topic.setTitle(storyHeader.text());
+                        topic.setURL(storyHeader.attr("href"));
 
-                    User author = new User(storyHeader.text(), storyHeader.attr("href"));
-                    topic.setAuthor(author);
-                    author.getWrittenTopics().add(topic);
-                    userService.save(author);
+                        //поиск автора
+                        storyHeader = story.getElementsByClass("story__author").get(0);
 
-                    logger.debug(String.format("Получен объект Topic: %s", topic));
+                        User author = userService.findOrCreate(storyHeader.text());
+                        author.setProfile(storyHeader.attr("href"));
 
-                    Map<User, Set<Comment>> map = parsingTopicPage(topic.getURL());
+                        topic.setAuthor(author);
+                        author.getWrittenTopics().add(topic);
+                        userService.save(author);
 
-                    saveData(userService, topicService, commentService, topic, map);
+                        logger.debug(String.format("Получен объект Topic: %s", topic));
 
-                } catch (NumberFormatException e) {
-                    logger.debug(String.format("Произошла ошибка при парсинге номера истории: %s", story.attr("data-story-id")));
+                        Map<User, Set<Comment>> map = parsingTopicPage(topic.getURL(), userService);
+
+                        saveData(userService, topicService, commentService, topic, map);
+
+                    } catch (NumberFormatException e) {
+                        logger.debug(String.format("Произошла ошибка при парсинге номера истории: %s. Достигли конца страницы", story.attr("data-story-id")));
+                    } catch (InterruptedException e) {
+                        logger.debug(String.format("Произошла неожиданная остановка процесса обработки", story.attr("data-story-id")));
+                    }
                 }
             }
 
         } catch (IOException e) {
             logger.debug(String.format("Произошла ошибка при получении страницы сайта: %s", INDEX_URL));
         }
+
+        logger.debug("Парсинг завершен!");
     }
 
-    private static Map<User, Set<Comment>> parsingTopicPage(String url) {
+    private static Map<User, Set<Comment>> parsingTopicPage(String url, UserService userService) {
         logger.debug(LogUtil.getMethodName());
         logger.debug(String.format("Обрабатывается страницы поста: %s", url));
 
@@ -112,7 +117,8 @@ public class Parser {
                     String userProfile = userBranch.attr("href");
                     String userName = userBranch.getElementsByTag("span").get(0).text();
 
-                    User user = new User(userName, userProfile);
+                    User user = userService.findOrCreate(userName);
+                    user.setProfile(userProfile);
                     Comment comment = new Comment(user, commentId);
 
                     logger.debug(String.format("userName: %s, profile: %s, commentId: %s",
@@ -141,21 +147,25 @@ public class Parser {
     private static boolean saveData(UserService userService, TopicService topicService, CommentService commentService, Topic topic, Map<User, Set<Comment>> map){
         logger.debug(LogUtil.getMethodName());
 
+        topic = topicService.save(topic);
+
         for (Map.Entry<User, Set<Comment>> entry : map.entrySet()){
             logger.debug(String.format("Обрабатываем данные пользователя %s", entry.getKey()));
-            User user = entry.getKey();
+
+            User user = userService.save(entry.getKey());
 
             for (Comment comment : entry.getValue()){
                 logger.debug(String.format("Комментарий id: %d", comment.getCommentId()));
 
-                topic.getComments().add(comment);
-                comment.setTopic(topic);
-                user.getComments().add(comment);
 
+                //topic.getComments().add(comment);
+                comment.setTopic(topic);
+                comment.setUser(user);
+                //user.getComments().add(comment);
                 commentService.save(comment);
             }
 
-            userService.save(user);
+            //userService.save(user);
         }
 
         Topic result = topicService.save(topic);

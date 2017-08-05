@@ -37,7 +37,11 @@ public class UserController {
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String getIndexPage(Model model){
         logger.debug(LogUtil.getMethodName());
-        model.addAttribute("title", "JavaConfig index page");
+        model.addAttribute("title", "Statistic data");
+
+        model.addAttribute("usersCount", userService.getTotalCount());
+        model.addAttribute("topicsCount", topicService.getTotalCount());
+        model.addAttribute("commentsCount", commentService.getTotalCount());
 
         return "index";
     }

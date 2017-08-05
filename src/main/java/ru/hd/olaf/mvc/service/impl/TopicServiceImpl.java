@@ -29,18 +29,21 @@ public class TopicServiceImpl implements TopicService {
         return topic ==  null ? new Topic(topicId) : topic;
     }
 
-    @Transactional(propagation= Propagation.REQUIRED)
     public Topic save(Topic topic) {
         logger.debug(LogUtil.getMethodName());
         logger.debug(String.format("Entity Topic for save: %s", topic));
 
         Topic result = topic;
         try {
-            result = topicRepository.saveAndFlush(topic);
+            result = topicRepository.save(topic);
         } catch (Exception e) {
             logger.debug(e.getMessage());
         }
 
         return result;
+    }
+
+    public Integer getTotalCount() {
+        return topicRepository.getTotalCount();
     }
 }

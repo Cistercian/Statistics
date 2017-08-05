@@ -10,4 +10,6 @@ public interface TopicService {
     Topic findOrCreateByTopicId(Integer topicId);
 
     Topic save(Topic topic);
+
+    Integer getTotalCount();
 }

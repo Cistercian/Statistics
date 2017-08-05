@@ -22,6 +22,16 @@ public class CommentServiceImpl implements CommentService {
 
     public Comment save(Comment comment) {
         logger.debug(LogUtil.getMethodName());
-        return commentRepository.save(comment);
+
+        Comment existed = commentRepository.findByUserAndTopicAndCommentId(comment.getUser(), comment.getTopic(), comment.getCommentId());
+
+        if (existed == null)
+            return commentRepository.save(comment);
+        else
+            return existed;
+    }
+
+    public Integer getTotalCount() {
+        return commentRepository.getTotalCount();
     }
 }
