@@ -10,33 +10,26 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import ru.hd.olaf.entities.Topic;
-import ru.hd.olaf.entities.User;
-import ru.hd.olaf.mvc.repository.CommentRepository;
-import ru.hd.olaf.mvc.service.CommentService;
 import ru.hd.olaf.mvc.service.TopicService;
-import ru.hd.olaf.mvc.service.UserService;
-import ru.hd.olaf.parser.Parser;
 import ru.hd.olaf.util.LogUtil;
-import ru.hd.olaf.util.db.UserSortable;
+import ru.hd.olaf.util.db.TopicSortable;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * Created by d.v.hozyashev on 31.07.2017.
+ * Created by Olaf on 06.08.2017.
  */
 @Controller
-public class UserController {
+public class TopicController {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+    private static final Logger logger = LoggerFactory.getLogger(TopicController.class);
 
     @Autowired
-    private UserService userService;
+    private TopicService topicService;
 
-    @RequestMapping(value = "/data/users", method = RequestMethod.GET)
-    public String getUsersPage(Model model, Pageable pageable){
+    @RequestMapping(value = "/data/topics", method = RequestMethod.GET)
+    public String getTopicsPage(Model model, Pageable pageable) {
         logger.debug(LogUtil.getMethodName());
 
         model.addAttribute("currentPage", pageable.getPageNumber());
@@ -50,10 +43,11 @@ public class UserController {
         sortDirection = "DESC".equalsIgnoreCase(sortDirection) ? "ASC" : "DESC";
         model.addAttribute("sortDirection", sortDirection);
 
-        List<UserSortable> users = userService.getUsers(pageable).getContent();
-        model.addAttribute("users", users);
+        List<TopicSortable> topics = topicService.getTopics(pageable).getContent();
+        model.addAttribute("topics", topics);
 
-        return "data/users";
+        logger.debug(String.format("Size of data: %d", topics.size()));
+
+        return "data/topics";
     }
-
 }

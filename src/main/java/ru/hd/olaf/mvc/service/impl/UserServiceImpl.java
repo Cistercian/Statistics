@@ -4,11 +4,15 @@ import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.hd.olaf.entities.User;
 import ru.hd.olaf.mvc.repository.UserRepository;
 import ru.hd.olaf.mvc.service.UserService;
 import ru.hd.olaf.util.LogUtil;
+import ru.hd.olaf.util.db.UserSortable;
 
 import java.util.List;
 
@@ -27,6 +31,7 @@ public class UserServiceImpl implements UserService {
         return Lists.newArrayList(userRepository.findAll());
     }
 
+    @Transactional
     public User save(User user) {
         logger.debug(LogUtil.getMethodName());
 
@@ -42,7 +47,12 @@ public class UserServiceImpl implements UserService {
         return user != null ? user : new User(username);
     }
 
-    public Integer getTotalCount() {
-        return userRepository.getTotalCount();
+    public long getTotalCount() {
+        return userRepository.count();
+    }
+
+    public Page<UserSortable> getUsers(Pageable pageable) {
+        logger.debug(LogUtil.getMethodName());
+        return userRepository.getSummaryData(pageable);
     }
 }

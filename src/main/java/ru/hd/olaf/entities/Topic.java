@@ -13,9 +13,10 @@ import java.util.Set;
 @Table(name = "topics", schema = "parsed_site")
 public class Topic {
     private Integer id;                 //первичный ключ
-    private String URL;                 //URL топика
+    private String url;                 //URL топика
     private String title;               //тема топика
-    private Integer topicId;             //id топика
+    private Integer rating;             //рейтинг
+    private Integer topicId;            //id топика
     private User author;                //автор
     private Set<Comment> comments = new HashSet<Comment>();
 
@@ -39,12 +40,12 @@ public class Topic {
 
     @Basic
     @Column(name = "url", nullable = false, length = 255)
-    public String getURL() {
-        return URL;
+    public String getUrl() {
+        return url;
     }
 
-    public void setURL(String URL) {
-        this.URL = URL;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     @Basic
@@ -67,6 +68,16 @@ public class Topic {
         this.topicId = topicId;
     }
 
+    @Basic
+    @Column(name = "rating")
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
     @ManyToOne
     @JoinColumn(name = "author")
     @JsonBackReference
@@ -78,7 +89,7 @@ public class Topic {
         this.author = author;
     }
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "topic", cascade = CascadeType.REMOVE, orphanRemoval = false)
     @JsonBackReference
     public Set<Comment> getComments() {
         return comments;
@@ -92,7 +103,7 @@ public class Topic {
     public String toString() {
         return "Topic{" +
                 "id=" + id +
-                ", URL='" + (URL != null ? URL : "") + '\'' +
+                ", url='" + (url != null ? url : "") + '\'' +
                 ", title='" + (title != null ? title : "") + '\'' +
                 ", topicId=" + (topicId != null ? topicId : "n/a") +
                 ", author=" + (author != null ? author : "") +

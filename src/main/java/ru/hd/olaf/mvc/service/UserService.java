@@ -1,6 +1,9 @@
 package ru.hd.olaf.mvc.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ru.hd.olaf.entities.User;
+import ru.hd.olaf.util.db.UserSortable;
 
 import java.util.List;
 
@@ -15,6 +18,7 @@ public interface UserService {
 
     User findOrCreate(String username);
 
-    Integer getTotalCount();
+    long getTotalCount();
 
+    Page<UserSortable> getUsers(Pageable pageable);
 }

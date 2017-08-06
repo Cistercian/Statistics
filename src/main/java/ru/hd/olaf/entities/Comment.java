@@ -12,6 +12,7 @@ public class Comment {
     private Topic topic;
     private User user;
     private Integer commentId;
+    private Integer rating;
 
     public Comment() {
     }
@@ -62,6 +63,16 @@ public class Comment {
         this.commentId = commentId;
     }
 
+    @Basic
+    @Column(name = "rating")
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -83,5 +94,15 @@ public class Comment {
         result = 31 * result + (user != null ? user.hashCode() : 0);
         result = 31 * result + (commentId != null ? commentId.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "id=" + id +
+                ", topic=" + (topic != null ? topic : "") +
+                ", user=" + (topic != null ? topic : "") +
+                ", commentId=" + (topic != null ? topic : "") +
+                '}';
     }
 }

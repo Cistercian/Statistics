@@ -16,9 +16,11 @@ import ru.hd.olaf.mvc.service.UserService;
 import ru.hd.olaf.util.LogUtil;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by d.v.hozyashev on 04.08.2017.
@@ -55,17 +57,21 @@ public class Parser {
 
                         Topic topic = topicService.findOrCreateByTopicId(storyId);
 
-                        Element storyHeader = story.getElementsByClass("story__header-title").get(0)
+                        Element storyData = story.getElementsByClass("story__header-title").get(0)
                                 .getElementsByTag("a").get(0);
 
-                        topic.setTitle(storyHeader.text());
-                        topic.setURL(storyHeader.attr("href"));
+                        topic.setTitle(storyData.text());
+                        topic.setUrl(storyData.attr("href"));
+
+                        //поиск рейтинга
+                        storyData = story.getElementsByClass("story__rating-count").get(0);
+                        topic.setRating(Integer.parseInt(storyData.text()));
 
                         //поиск автора
-                        storyHeader = story.getElementsByClass("story__author").get(0);
+                        storyData = story.getElementsByClass("story__author").get(0);
 
-                        User author = userService.findOrCreate(storyHeader.text());
-                        author.setProfile(storyHeader.attr("href"));
+                        User author = userService.findOrCreate(storyData.text());
+                        author.setProfile(storyData.attr("href"));
 
                         topic.setAuthor(author);
                         author.getWrittenTopics().add(topic);
@@ -73,7 +79,7 @@ public class Parser {
 
                         logger.debug(String.format("Получен объект Topic: %s", topic));
 
-                        Map<User, Set<Comment>> map = parsingTopicPage(topic.getURL(), userService);
+                        Map<User, Set<Comment>> map = parsingTopicPage(topic.getUrl(), userService);
 
                         saveData(userService, topicService, commentService, topic, map);
 
@@ -109,17 +115,33 @@ public class Parser {
                 try {
                     Integer commentId = Integer.valueOf(elementComment.attr("data-id"));
 
-                    Element userBranch = elementComment.getElementsByClass("b-comment__body").get(0)
-                            .getElementsByClass("b-comment__header").get(0)
-                            .getElementsByClass("b-comment__user").get(0)
+//                    Element userBranch = elementComment.getElementsByClass("b-comment__body").get(0)
+//                            .getElementsByClass("b-comment__header").get(0)
+//                            .getElementsByClass("b-comment__user").get(0)
+//                            .getElementsByTag("a").get(0);
+
+                    Element userData = elementComment.getElementsByClass("b-comment__user").get(0)
                             .getElementsByTag("a").get(0);
 
-                    String userProfile = userBranch.attr("href");
-                    String userName = userBranch.getElementsByTag("span").get(0).text();
+                    String userProfile = userData.attr("href");
+                    String userName = userData.getElementsByTag("span").get(0).text();
 
                     User user = userService.findOrCreate(userName);
                     user.setProfile(userProfile);
+
+                    //рейтинг пользователя
+                    //getUserRating(user);
+
+                    //Собираем данные комментария
                     Comment comment = new Comment(user, commentId);
+                    //рейтинг комментария
+                    userData = elementComment.getElementsByClass("b-comment__rating-count").get(0);
+                    try {
+                        Integer rating = Integer.valueOf(userData.text());
+                        comment.setRating(rating);
+                    } catch (NumberFormatException e) {
+                        logger.debug(String.format("Ошибка при парсинге рейтинга комментария", userData.text()));
+                    }
 
                     logger.debug(String.format("userName: %s, profile: %s, commentId: %s",
                             userName, userProfile, commentId));
@@ -157,14 +179,12 @@ public class Parser {
             for (Comment comment : entry.getValue()){
                 logger.debug(String.format("Комментарий id: %d", comment.getCommentId()));
 
-
                 //topic.getComments().add(comment);
                 comment.setTopic(topic);
                 comment.setUser(user);
                 //user.getComments().add(comment);
                 commentService.save(comment);
             }
-
             //userService.save(user);
         }
 
@@ -174,4 +194,25 @@ public class Parser {
         return true;
     }
 
+    public static void getUserRating(User user){
+        logger.debug(LogUtil.getMethodName());
+        logger.debug(String.format("Refreshing user: %s", user.getUsername()));
+
+        try {
+            Document document = Jsoup.connect(user.getProfile()).get();
+
+            Element profileData = document.getElementsByClass("b-user-profile__value").get(1);
+
+            try {
+                Integer rating = Integer.valueOf(profileData.text());
+                user.setRating(rating);
+            } catch (NumberFormatException e) {
+                logger.debug(String.format("Ошибка при парсинге рейтинга комментария", profileData.text()));
+            }
+
+        } catch (IOException e) {
+            logger.debug(String.format("Возникла ошибка при открытии профиля пользователя: %s, %s, %s",
+                    user.getUsername(), user.getProfile(), e.getMessage()));
+        }
+    }
 }

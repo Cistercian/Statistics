@@ -3,6 +3,8 @@ package ru.hd.olaf.mvc.service.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,10 +12,16 @@ import ru.hd.olaf.entities.Topic;
 import ru.hd.olaf.mvc.repository.TopicRepository;
 import ru.hd.olaf.mvc.service.TopicService;
 import ru.hd.olaf.util.LogUtil;
+import ru.hd.olaf.util.db.TopicSortable;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContext;
 
 /**
  * Created by Olaf on 05.08.2017.
  */
+@Transactional
 @Service
 public class TopicServiceImpl implements TopicService {
 
@@ -21,6 +29,8 @@ public class TopicServiceImpl implements TopicService {
 
     @Autowired
     private TopicRepository topicRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public Topic findOrCreateByTopicId(Integer topicId) {
         logger.debug(LogUtil.getMethodName());
@@ -29,9 +39,9 @@ public class TopicServiceImpl implements TopicService {
         return topic ==  null ? new Topic(topicId) : topic;
     }
 
+    @Transactional
     public Topic save(Topic topic) {
         logger.debug(LogUtil.getMethodName());
-        logger.debug(String.format("Entity Topic for save: %s", topic));
 
         Topic result = topic;
         try {
@@ -43,7 +53,13 @@ public class TopicServiceImpl implements TopicService {
         return result;
     }
 
-    public Integer getTotalCount() {
-        return topicRepository.getTotalCount();
+    public long getTotalCount() {
+        logger.debug(LogUtil.getMethodName());
+        return topicRepository.count();
+    }
+
+    public Page<TopicSortable> getTopics(Pageable pageable) {
+        logger.debug(LogUtil.getMethodName());
+        return topicRepository.getSummaryData(pageable);
     }
 }

@@ -1,6 +1,9 @@
 package ru.hd.olaf.mvc.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ru.hd.olaf.entities.Topic;
+import ru.hd.olaf.util.db.TopicSortable;
 
 /**
  * Created by Olaf on 05.08.2017.
@@ -11,5 +14,7 @@ public interface TopicService {
 
     Topic save(Topic topic);
 
-    Integer getTotalCount();
+    long getTotalCount();
+
+    Page<TopicSortable> getTopics(Pageable pageable);
 }

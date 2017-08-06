@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.view.JstlView;
 @EnableWebMvc                                       //<mvc:annotation-driven>
 @Configuration                                      //данный класс является Java Configuration;
 @ComponentScan(basePackages = {"ru.hd.olaf.mvc"})   //<context:component-scan base-package=''>
+@EnableSpringDataWebSupport
 public class MvcConfig extends WebMvcConfigurerAdapter {
 
     /**

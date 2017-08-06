@@ -1,5 +1,7 @@
 package ru.hd.olaf.mvc.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ru.hd.olaf.entities.Comment;
 
 /**
@@ -9,5 +11,7 @@ public interface CommentService {
 
     Comment save(Comment comment);
 
-    Integer getTotalCount();
+    long getTotalCount();
+
+    Page<Comment> getComments(Pageable pageable);
 }

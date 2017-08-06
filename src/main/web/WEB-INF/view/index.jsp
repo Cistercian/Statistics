@@ -32,7 +32,7 @@
 <body>
 
 <!-- навигационная панель и модальное окно -->
-<%--<jsp:include page="/WEB-INF/view/tags/nav-panel.jsp"></jsp:include>--%>
+<jsp:include page="/WEB-INF/view/tags/nav-panel.jsp"></jsp:include>
 
 <script language="javascript" type="text/javascript">
     function testParsing() {
@@ -47,7 +47,7 @@
             success: function (data) {
                 hideLoader();
 
-                displayMessage('message', data.message);
+                //displayMessage('message', data.message);
             }
         });
     }
@@ -112,19 +112,44 @@
 
 <div class="content container-fluid wam-radius wam-min-height-0">
     <input id="_csrf_token" type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-    <textarea id="response" name="response" style="display: none;">${response}</textarea>
     <div class='row'>
         <div class="container-fluid wam-not-padding-xs">
-            <div class="panel panel-default wam-margin-left-1 wam-margin-right-1 wam-margin-top-1 ">
+            <div class="panel panel-default wam-margin-panel">
                 <div class="panel-heading wam-page-title">
                     <h3 class="wam-margin-bottom-0 wam-margin-top-0">${title}</h3>
                 </div>
-                <div class="panel-body">
+                <div class="panel-body wam-not-padding">
                     <div class="row">
+
                         <div class="col-xs-12 col-md-6">
+                            <h4><strong>Общее кол-во постов:</strong></h4>
+                        </div>
+                        <div class="col-xs-12 col-md-6">
+                            <h4>${topicsCount}</h4>
+                        </div>
+                        <div class="col-xs-12 col-md-6">
+                            <h4><strong>Общее кол-во пользователей:</strong></h4>
+                        </div>
+                        <div class="col-xs-12 col-md-6">
+                            <h4>${usersCount}</h4>
+                        </div>
+                        <div class="col-xs-12 col-md-6">
+                            <h4><strong>Общее кол-во комментариев:</strong></h4>
+                        </div>
+                        <div class="col-xs-12 col-md-6">
+                            <h4>${commentsCount}</h4>
+                        </div>
+
+                        <div class="col-xs-12 col-md-6 ">
                             <button class="btn-lg btn-default btn-block wam-btn-2" type="submit"
                                     onclick="testParsing();return false;">
                                 <span class='wam-font-size-2'>Парсинг</span>
+                            </button>
+                        </div>
+                        <div class="col-xs-12 col-md-6 ">
+                            <button class="btn-lg btn-default btn-block wam-btn-2" type="submit"
+                                    onclick="location.href='refreshUsersRating'">
+                                <span class='wam-font-size-2'>Обновить рейтинги пользователей</span>
                             </button>
                         </div>
                     </div>

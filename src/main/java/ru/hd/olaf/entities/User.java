@@ -14,6 +14,7 @@ import java.util.Set;
 public class User {
     private Integer id;                     //первичный ключ
     private String username;                //имя пользователя
+    private Integer rating;                 //рейтинг пользователя
     private String profile;                 //Путь до профиля
     private Set<Topic> writtenTopics = new HashSet<Topic>();    //топики, где пользователь автор
     private Set<Comment> comments = new HashSet<Comment>();
@@ -61,7 +62,17 @@ public class User {
         this.profile = profile;
     }
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "author", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    @Basic
+    @Column(name = "rating")
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "author", cascade = CascadeType.REMOVE, orphanRemoval = false)
     @JsonBackReference
     public Set<Topic> getWrittenTopics() {
         return writtenTopics;
@@ -71,7 +82,7 @@ public class User {
         this.writtenTopics = writtenTopics;
     }
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
     @JsonBackReference
     public Set<Comment> getComments() {
         return comments;

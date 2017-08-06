@@ -438,3 +438,10 @@ div.dataTables_filter {
 .wam-height-1 {
 	height: 2px
 }
+.wam-not-padding {
+	padding: 4px;
+	margin-bottom: 4px;
+}
+.wam-margin-panel {
+	margin: 5px;
+}

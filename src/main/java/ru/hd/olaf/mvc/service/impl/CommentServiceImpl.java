@@ -3,6 +3,8 @@ package ru.hd.olaf.mvc.service.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.hd.olaf.entities.Comment;
 import ru.hd.olaf.mvc.repository.CommentRepository;
@@ -31,7 +33,12 @@ public class CommentServiceImpl implements CommentService {
             return existed;
     }
 
-    public Integer getTotalCount() {
-        return commentRepository.getTotalCount();
+    public long getTotalCount() {
+        return commentRepository.count();
+    }
+
+    public Page<Comment> getComments(Pageable pageable) {
+        logger.debug(LogUtil.getMethodName());
+        return commentRepository.findAll(pageable);
     }
 }
