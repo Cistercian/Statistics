@@ -16,7 +16,7 @@ public interface UserService {
 
     User save(User user);
 
-    User findOrCreate(String username);
+    User findOrCreate(String username, String profile);
 
     long getTotalCount();
 

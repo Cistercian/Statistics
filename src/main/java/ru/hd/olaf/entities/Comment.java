@@ -1,5 +1,7 @@
 package ru.hd.olaf.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.*;
 
 /**
@@ -35,6 +37,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "topic")
+    @JsonBackReference
     public Topic getTopic() {
         return topic;
     }
@@ -45,6 +48,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "user")
+    @JsonBackReference
     public User getUser() {
         return user;
     }

@@ -1,19 +1,25 @@
 package ru.hd.olaf.util.db;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Created by Olaf on 06.08.2017.
  */
 public class UserSortable {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserSortable.class);
+
     private String username;
     private Integer rating;
     private String profile;
     private Integer countWrittenTopics;
     private Integer countComments;
 
-    public UserSortable(String username, int rating, String profile, long countWrittenTopics, long countComments) {
-        this.username = username;
+    public UserSortable(String username, Integer rating, String profile, long countWrittenTopics, long countComments) {
+        this.username = (username != null ? username : "");
         this.rating = rating;
-        this.profile = profile;
+        this.profile = (profile != null ? profile : "");
         this.countWrittenTopics = (int)countWrittenTopics;
         this.countComments = (int)countComments;
     }

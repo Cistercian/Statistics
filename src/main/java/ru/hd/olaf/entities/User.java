@@ -53,7 +53,7 @@ public class User {
     }
 
     @Basic
-    @Column(name = "profile", nullable = false, length = 255)
+    @Column(name = "profile", length = 255)
     public String getProfile() {
         return profile;
     }
@@ -82,7 +82,7 @@ public class User {
         this.writtenTopics = writtenTopics;
     }
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.MERGE, orphanRemoval = false)
     @JsonBackReference
     public Set<Comment> getComments() {
         return comments;

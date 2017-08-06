@@ -22,7 +22,7 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 
     @Query("SELECT new ru.hd.olaf.util.db.UserSortable(" +
             "u.username, u.rating, u.profile, COUNT(DISTINCT t.id) AS countWrittenTopics, COUNT(c.id) AS countComments" +
-            ") FROM User u JOIN u.writtenTopics t JOIN u.comments c " +
+            ") FROM User u LEFT JOIN u.writtenTopics t LEFT JOIN u.comments c " +
             "GROUP BY u.id ")
     Page<UserSortable> getSummaryData(Pageable pageable);
 }

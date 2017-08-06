@@ -38,13 +38,13 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-    public User findOrCreate(String username) {
+    public User findOrCreate(String username, String profile) {
         logger.debug(LogUtil.getMethodName());
         logger.debug(String.format("Ищем в БД пользователя: %s", username));
 
         User user = userRepository.findByUsername(username);
 
-        return user != null ? user : new User(username);
+        return user != null ? user : new User(username, profile);
     }
 
     public long getTotalCount() {

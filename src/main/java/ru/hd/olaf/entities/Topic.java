@@ -107,7 +107,6 @@ public class Topic {
                 ", title='" + (title != null ? title : "") + '\'' +
                 ", topicId=" + (topicId != null ? topicId : "n/a") +
                 ", author=" + (author != null ? author : "") +
-                ", comments=" + (comments != null ? comments : "") +
                 '}';
     }
 }
