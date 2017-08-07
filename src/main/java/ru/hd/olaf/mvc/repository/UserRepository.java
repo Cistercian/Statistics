@@ -8,13 +8,15 @@ import org.springframework.stereotype.Repository;
 import ru.hd.olaf.entities.User;
 import ru.hd.olaf.util.db.UserSortable;
 
+import java.util.List;
+
 /**
  * Created by d.v.hozyashev on 31.07.2017.
  */
 @Repository
 public interface UserRepository extends CrudRepository<User, Integer> {
 
-    User findByUsername(String username);
+    List<User> findByUsername(String username);
 
     long count();
 

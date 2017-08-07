@@ -30,7 +30,6 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         //аналог <listener>
         servletContext.addListener(new ContextLoaderListener(rootContext));
 
-        //Create the dispatcher servlet's Spring application context
         //аналог <servlet>
         AnnotationConfigWebApplicationContext servletAppContext = new AnnotationConfigWebApplicationContext();
         servletAppContext.register(MvcConfig.class);
@@ -39,8 +38,6 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         // throw NoHandlerFoundException to controller ExceptionHandler.class. Used for <error-page> analogue
         dispatcherServlet.setThrowExceptionIfNoHandlerFound(true);
 
-        //register and map the dispatcher servlet
-        //note Dispatcher servlet with constructor arguments
         //аналог <servlet-mapping>
         ServletRegistration.Dynamic dispatcher = servletContext.addServlet("dispatcher", dispatcherServlet);
         dispatcher.setLoadOnStartup(1);

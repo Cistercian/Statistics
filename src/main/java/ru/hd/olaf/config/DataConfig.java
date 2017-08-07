@@ -100,7 +100,7 @@ public class DataConfig {
 
     /**
      * Аналог <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
-     *
+     * имя бина принциписально... Почему?
      * @return
      */
     @Bean(name = "jpaTransactionManager")

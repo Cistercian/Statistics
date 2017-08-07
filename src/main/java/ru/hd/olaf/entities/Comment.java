@@ -35,7 +35,7 @@ public class Comment {
         this.id = id;
     }
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "topic")
     @JsonBackReference
     public Topic getTopic() {
@@ -46,7 +46,7 @@ public class Comment {
         this.topic = topic;
     }
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user")
     @JsonBackReference
     public User getUser() {

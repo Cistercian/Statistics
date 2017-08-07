@@ -21,7 +21,6 @@ import javax.persistence.PersistenceContext;
 /**
  * Created by Olaf on 05.08.2017.
  */
-@Transactional
 @Service
 public class TopicServiceImpl implements TopicService {
 

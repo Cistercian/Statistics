@@ -89,7 +89,7 @@ public class Topic {
         this.author = author;
     }
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "topic", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = false)
     @JsonBackReference
     public Set<Comment> getComments() {
         return comments;
@@ -97,6 +97,13 @@ public class Topic {
 
     public void setComments(Set<Comment> comments) {
         this.comments = comments;
+    }
+
+    public void addComment(Comment comment) {
+        if (comments.contains(comment))
+            return;
+
+        comments.add(comment);
     }
 
     @Override
