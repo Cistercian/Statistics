@@ -80,7 +80,7 @@ public class Topic {
 
     @ManyToOne
     @JoinColumn(name = "author")
-    @JsonBackReference
+    //@JsonBackReference
     public User getAuthor() {
         return author;
     }
@@ -90,7 +90,7 @@ public class Topic {
     }
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = false)
-    @JsonBackReference
+    //@JsonBackReference
     public Set<Comment> getComments() {
         return comments;
     }

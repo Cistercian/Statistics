@@ -72,8 +72,8 @@ public class User {
         this.rating = rating;
     }
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = false)
-    @JsonBackReference
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = false)
+    //@JsonBackReference
     public Set<Topic> getWrittenTopics() {
         return writtenTopics;
     }
@@ -83,7 +83,7 @@ public class User {
     }
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = false)
-    @JsonBackReference
+    //@JsonBackReference
     public Set<Comment> getComments() {
         return comments;
     }

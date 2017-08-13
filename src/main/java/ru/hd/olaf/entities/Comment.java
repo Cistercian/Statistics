@@ -37,7 +37,7 @@ public class Comment {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "topic")
-    @JsonBackReference
+    //@JsonBackReference
     public Topic getTopic() {
         return topic;
     }
@@ -46,9 +46,9 @@ public class Comment {
         this.topic = topic;
     }
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "user")
-    @JsonBackReference
+    //@JsonBackReference
     public User getUser() {
         return user;
     }
@@ -105,8 +105,8 @@ public class Comment {
         return "Comment{" +
                 "id=" + id +
                 ", topic=" + (topic != null ? topic : "") +
-                ", user=" + (topic != null ? topic : "") +
-                ", commentId=" + (topic != null ? topic : "") +
+                ", user=" + (user != null ? user : "") +
+                ", commentId=" + (commentId != null ? commentId : "") +
                 '}';
     }
 }

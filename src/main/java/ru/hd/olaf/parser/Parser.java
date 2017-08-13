@@ -44,10 +44,9 @@ public class Parser {
         try {
             for (short countPages = 1; countPages <= PAGES_TO_SCAN; countPages++) {
 
-
-//                Document document = Jsoup.connect(INDEX_URL + countPages).timeout(0).get();
+                Document document = Jsoup.connect(INDEX_URL + countPages).timeout(0).get();
                 //stub
-                Document document = Jsoup.parse(new File("C:/1/java/Statistics/src/main/resources/template/index.html"), "UTF-8");
+                //Document document = Jsoup.parse(new File("C:/1/java/Statistics/src/main/resources/template/index.html"), "UTF-8");
 
                 Elements stories = document.select("div.story");
 
@@ -88,6 +87,7 @@ public class Parser {
 
                         saveData(userService, topicService, commentService, topic, map);
 
+                        return;
                     } catch (NumberFormatException e) {
                         logger.debug(String.format("Произошла ошибка при парсинге номера истории: %s. Достигли конца страницы", story.attr("data-story-id")));
                     } catch (InterruptedException e) {
@@ -113,9 +113,9 @@ public class Parser {
 
         try {
 
-//            Document document = Jsoup.connect(url).timeout(0).get();
+            Document document = Jsoup.connect(url).timeout(0).get();
             //stub
-            Document document = Jsoup.parse(new File("C:/1/java/Statistics/src/main/resources/template/topic.html"), "UTF-8");
+            //Document document = Jsoup.parse(new File("C:/1/java/Statistics/src/main/resources/template/topic.html"), "UTF-8");
 
             Elements elements = document.getElementsByClass(CLASSNAME_USER);
 
@@ -155,7 +155,6 @@ public class Parser {
 
                     comments.add(comment);
                     result.put(user, comments);
-
 //                    if (++counter > 50)
 //                        return result;
                 } catch (NumberFormatException e) {
@@ -184,25 +183,31 @@ public class Parser {
             User user = entry.getKey();
             user = userService.findOrCreate(user.getUsername(), user.getProfile());
             //getUserRating(user);
-            //user = userService.save(user);
+            //
 
             for (Comment comment : entry.getValue()){
                 logger.debug(String.format("Комментарий id: %d", comment.getCommentId()));
 
-                //topic.getComments().add(comment);
 //                topic.addComment(comment);
-                comment.setTopic(topic);
-//                comment.setUser(user);
+                //comment.setTopic(topic);
+                //comment.setUser(user);
                 user.getComments().add(comment);
-                //commentService.save(comment); //!!!
+                topic.getComments().add(comment);
+//                commentService.save(comment); //!!!
             }
-            userService.save(user);
+            //user = userService.save(user);
+            topic = topicService.save(topic);
         }
 
         map = null;
 
-        Topic result = topicService.save(topic);
-        logger.debug(result.toString());
+        for (Comment comment : topic.getComments())
+            System.out.println(comment);
+
+        topic = topicService.save(topic);
+        logger.debug(topic.toString());
+
+        logger.debug("Завершено сохранение данных топика %s.", topic.getTopicId());
 
         return true;
     }
