@@ -4,7 +4,6 @@ import org.hibernate.Session;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -24,6 +23,7 @@ import ru.hd.olaf.util.LogUtil;
 import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Created by d.v.hozyashev on 04.08.2017.
@@ -35,76 +35,85 @@ public class Parser {
     private static final Logger logger = LoggerFactory.getLogger(Parser.class);
 
     private static final String INDEX_URL = "https://pikabu.ru/hot?page=";
-
     private static final String CLASSNAME_USER = "b-comment";
-
     private static final short PAGES_TO_SCAN = 1;
 
-    public static String parsingIndexPage(EntityManager entityManager, UserService userService, TopicService topicService, CommentService commentService) {
+    private static WebDriver webDriver;
+
+    private static UserService userService;
+    private static TopicService topicService;
+    private static CommentService commentService;
+
+    public static String parsingIndexPage(EntityManager entityManager, UserService uService, TopicService tService, CommentService cService) {
         logger.debug(LogUtil.getMethodName());
+
+        System.setProperty("webdriver.gecko.driver", "C:\\Program Files\\Mozilla Firefox\\geckodriver.exe");
+        java.util.logging.Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
+        webDriver = new FirefoxDriver();
+        userService = uService;
+        topicService = tService;
+        commentService = cService;
 
         StringBuilder message = new StringBuilder();
         int countPages;
         try {
             for (countPages = 1; countPages <= PAGES_TO_SCAN; countPages++) {
 
-                Document document = Jsoup.connect(INDEX_URL + countPages).timeout(0).get();
-                //stub
-                //Document document = Jsoup.parse(new File("C:/1/java/Statistics/src/main/resources/template/index.html"), "UTF-8");
+//                Document document = Jsoup.connect(INDEX_URL + countPages).timeout(0).get();
+                webDriver.get(INDEX_URL + countPages);
 
-                Elements stories = document.select("div.story");
+                List<WebElement> stories = webDriver.findElements(By.className("story"));
 
-                for (Element story : stories) {
-
+                Set<Topic> topics = new HashSet<Topic>();
+                for (WebElement story : stories) {
                     try {
                         Thread.sleep((long) (Math.random() * 0));
 
-                        logger.debug(String.format("Обрабатывается история с id: %s", story.attr("data-story-id")));
-                        Integer storyId = Integer.parseInt(story.attr("data-story-id"));
+                        logger.debug(String.format("Обрабатывается история с id: %s", story.getAttribute("data-story-id")));
+                        Integer storyId = Integer.parseInt(story.getAttribute("data-story-id"));
 
                         Topic topic = topicService.findOrCreateByTopicId(storyId);
 
-                        Element storyData = story.getElementsByClass("story__header-title").get(0)
-                                .getElementsByTag("a").get(0);
+                        WebElement storyData = story.findElement(By.className("story__header-title"))
+                                .findElement(By.tagName("a"));
 
-                        topic.setTitle(storyData.text());
-                        topic.setUrl(storyData.attr("href"));
+                        topic.setTitle(storyData.getText());
+                        topic.setUrl(storyData.getAttribute("href"));
 
                         //поиск рейтинга
-                        storyData = story.getElementsByClass("story__rating-count").get(0);
-                        topic.setRating(Integer.parseInt(storyData.text()));
+                        storyData = story.findElement(By.className("story__rating-count"));
+                        topic.setRating(Integer.parseInt(storyData.getText()));
 
                         //поиск автора
                         if (topic.getAuthor() == null) {
-                            storyData = story.getElementsByClass("story__author").get(0);
+                            storyData = story.findElement(By.className("story__author"));
 
                             Session session = HibernateUtil.getSessionFactory().openSession();
                             session.beginTransaction();
-                            User author = userService.findOrCreate(session, storyData.text(), storyData.attr("href"));
+                            User author = userService.findOrCreate(session, storyData.getText(), storyData.getAttribute("href"));
                             session.getTransaction().commit();
                             session.close();
 
                             topic.setAuthor(author);
-                            //author.getWrittenTopics().add(topic);
                             userService.save(author);
                         }
 
                         logger.debug(String.format("Получен объект Topic: %s", topic));
 
-                        Map<User, Set<Comment>> map = parsingTopicPage(topic.getUrl(), userService);
+                        topics.add(topic);
 
-                        saveData(userService, topicService, commentService, topic, map);
-
-                        //return;
+                        //return "";
                     } catch (NumberFormatException e) {
-                        logger.debug(String.format("Произошла ошибка при парсинге номера истории: %s. Достигли конца страницы", story.attr("data-story-id")));
+                        logger.debug(String.format("Произошла ошибка при парсинге номера истории: %s. Достигли конца страницы", story.getAttribute("data-story-id")));
                     } catch (InterruptedException e) {
-                        logger.debug(String.format("Произошла неожиданная остановка процесса обработки: %s", story.attr("data-story-id")));
+                        logger.debug(String.format("Произошла неожиданная остановка процесса обработки: %s", story.getAttribute("data-story-id")));
                     }
                 }
+
+                parsingTopics(topics);
             }
-        } catch (IOException e) {
-            String error = String.format("Произошла ошибка при получении страницы сайта: %s", INDEX_URL);
+        } catch (Exception e) {
+            String error = String.format("Произошла ошибка при получении страницы сайта: %s", e.getMessage());
             logger.debug(error);
             message.append(error);
 
@@ -119,44 +128,53 @@ public class Parser {
         return message.toString();
     }
 
-    private static Map<User, Set<Comment>> parsingTopicPage(String url, UserService userService) {
+    private static void parsingTopics(Set<Topic> topics) {
+        logger.debug(LogUtil.getMethodName());
+
+        for (Topic topic : topics) {
+            Map<User, Set<Comment>> map = parsingTopicPage(topic.getUrl());
+            saveData(topic, map);
+        }
+    }
+
+    private static Map<User, Set<Comment>> parsingTopicPage(String url) {
         logger.debug(LogUtil.getMethodName());
         logger.debug(String.format("Обрабатывается страница поста: %s", url));
-
-        //int counter = 0;
 
         Map<User, Set<Comment>> result = new HashMap<User, Set<Comment>>();
 
         try {
-
-            WebDriver webDriver = new FirefoxDriver();
             webDriver.get(url);
-            while (true){
-                WebElement element = webDriver.findElement(By.className("b-comments__next"));
-                if ("display: none;".equals(element.getAttribute("style")))
+
+            while (true) {
+                try {
+                    WebElement element = webDriver.findElement(By.className("b-comments__next"));
+                    if ("display: none;".equals(element.getAttribute("style")))
+                        break;
+                    else {
+                        element.click();
+                        webDriver.wait(1000);
+                    }
+                } catch (Exception e) {
+                    logger.debug(e.getMessage());
                     break;
-                else {
-                    element.click();
-                    webDriver.wait(1000);
                 }
             }
             //Document document = Jsoup.connect(url).timeout(0).get();
-            //stub
-            //Document document = Jsoup.parse(new File("C:/1/java/Statistics/src/main/resources/template/topic.html"), "UTF-8");
-
             //Elements elements = document.getElementsByClass(CLASSNAME_USER);
             List<WebElement> elements = webDriver.findElements(By.className(CLASSNAME_USER));
 
-            for (Element elementComment : elements) {
+            for (WebElement elementComment : elements) {
 
                 try {
-                    Integer commentId = Integer.valueOf(elementComment.attr("data-id"));
+                    Integer commentId = Integer.valueOf(elementComment.getAttribute("data-id"));
 
-                    Element userData = elementComment.getElementsByClass("b-comment__user").get(0)
-                            .getElementsByTag("a").get(0);
 
-                    String userProfile = userData.attr("href");
-                    String userName = userData.getElementsByTag("span").get(0).text();
+                    WebElement userData = elementComment.findElement(By.className("b-comment__user"))
+                            .findElement(By.tagName("a"));
+
+                    String userProfile = userData.getAttribute("href");
+                    String userName = userData.findElement(By.tagName("span")).getText();
 
                     //User user = userService.findOrCreate(userName);
                     User user = new User(userName);
@@ -168,12 +186,12 @@ public class Parser {
                     //Собираем данные комментария
                     Comment comment = new Comment(user, commentId);
                     //рейтинг комментария
-                    userData = elementComment.getElementsByClass("b-comment__rating-count").get(0);
+                    userData = elementComment.findElement(By.className("b-comment__rating-count"));
                     try {
-                        Integer rating = Integer.valueOf(userData.text());
+                        Integer rating = Integer.valueOf(userData.getText());
                         comment.setRating(rating);
                     } catch (NumberFormatException e) {
-                        logger.debug(String.format("Ошибка при парсинге рейтинга комментария: %s", userData.text()));
+                        logger.debug(String.format("Ошибка при парсинге рейтинга комментария: %s", userData.getText()));
                     }
 
                     logger.debug(String.format("userName: %s, profile: %s, commentId: %s",
@@ -183,18 +201,13 @@ public class Parser {
 
                     comments.add(comment);
                     result.put(user, comments);
-//                    if (++counter > 50)
-//                        return result;
                 } catch (NumberFormatException e) {
-                    logger.debug(String.format("Ошибка парсинга номера комментария: %s", elementComment.attr("data-id")));
+                    logger.debug(String.format("Ошибка парсинга номера комментария: %s", elementComment.getAttribute("data-id")));
                 }
 
             }
             logger.debug("Закончили парсить топик.");
-        } catch (IOException e) {
-            logger.debug(String.format("Ошибка парсинга страницы: %s", e.getMessage()));
-            return null;
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             logger.debug(String.format("Ошибка парсинга страницы: %s", e.getMessage()));
             return null;
         }
@@ -203,8 +216,11 @@ public class Parser {
     }
 
     @Transactional
-    private static boolean saveData(UserService userService, TopicService topicService, CommentService commentService, Topic topic, Map<User, Set<Comment>> map) {
+    private static boolean saveData(Topic topic, Map<User, Set<Comment>> map) {
         logger.debug(LogUtil.getMethodName());
+
+        if (map == null)
+            throw new IllegalArgumentException("Empty map");
 
         Session session = HibernateUtil.getSessionFactory().openSession();
         session.beginTransaction();
