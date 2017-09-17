@@ -47,7 +47,7 @@
             success: function (data) {
                 hideLoader();
 
-                //displayMessage('message', data.message);
+                displayMessage('message', data);
             }
         });
     }

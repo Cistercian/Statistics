@@ -1,5 +1,6 @@
 package ru.hd.olaf.mvc.service;
 
+import org.hibernate.Session;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import ru.hd.olaf.entities.Comment;
@@ -9,7 +10,7 @@ import ru.hd.olaf.entities.Comment;
  */
 public interface CommentService {
 
-    Comment save(Comment comment);
+    void save(Session session, Comment comment);
 
     long getTotalCount();
 

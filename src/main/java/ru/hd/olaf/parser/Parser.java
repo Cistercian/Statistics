@@ -1,9 +1,14 @@
 package ru.hd.olaf.parser;
 
+import org.hibernate.Session;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,15 +18,12 @@ import ru.hd.olaf.entities.User;
 import ru.hd.olaf.mvc.service.CommentService;
 import ru.hd.olaf.mvc.service.TopicService;
 import ru.hd.olaf.mvc.service.UserService;
+import ru.hd.olaf.util.HibernateUtil;
 import ru.hd.olaf.util.LogUtil;
 
 import javax.persistence.EntityManager;
-import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by d.v.hozyashev on 04.08.2017.
@@ -36,13 +38,15 @@ public class Parser {
 
     private static final String CLASSNAME_USER = "b-comment";
 
-    private static final short PAGES_TO_SCAN = 5;
+    private static final short PAGES_TO_SCAN = 1;
 
-    public static void parsingIndexPage(EntityManager entityManager, UserService userService, TopicService topicService, CommentService commentService) {
+    public static String parsingIndexPage(EntityManager entityManager, UserService userService, TopicService topicService, CommentService commentService) {
         logger.debug(LogUtil.getMethodName());
 
+        StringBuilder message = new StringBuilder();
+        int countPages;
         try {
-            for (short countPages = 1; countPages <= PAGES_TO_SCAN; countPages++) {
+            for (countPages = 1; countPages <= PAGES_TO_SCAN; countPages++) {
 
                 Document document = Jsoup.connect(INDEX_URL + countPages).timeout(0).get();
                 //stub
@@ -53,7 +57,7 @@ public class Parser {
                 for (Element story : stories) {
 
                     try {
-                        Thread.sleep((long) Math.random() * (long) 5000);
+                        Thread.sleep((long) (Math.random() * 0));
 
                         logger.debug(String.format("Обрабатывается история с id: %s", story.attr("data-story-id")));
                         Integer storyId = Integer.parseInt(story.attr("data-story-id"));
@@ -74,7 +78,11 @@ public class Parser {
                         if (topic.getAuthor() == null) {
                             storyData = story.getElementsByClass("story__author").get(0);
 
-                            User author = userService.findOrCreate(storyData.text(), storyData.attr("href"));
+                            Session session = HibernateUtil.getSessionFactory().openSession();
+                            session.beginTransaction();
+                            User author = userService.findOrCreate(session, storyData.text(), storyData.attr("href"));
+                            session.getTransaction().commit();
+                            session.close();
 
                             topic.setAuthor(author);
                             //author.getWrittenTopics().add(topic);
@@ -87,7 +95,7 @@ public class Parser {
 
                         saveData(userService, topicService, commentService, topic, map);
 
-                        return;
+                        //return;
                     } catch (NumberFormatException e) {
                         logger.debug(String.format("Произошла ошибка при парсинге номера истории: %s. Достигли конца страницы", story.attr("data-story-id")));
                     } catch (InterruptedException e) {
@@ -95,12 +103,20 @@ public class Parser {
                     }
                 }
             }
-
         } catch (IOException e) {
-            logger.debug(String.format("Произошла ошибка при получении страницы сайта: %s", INDEX_URL));
+            String error = String.format("Произошла ошибка при получении страницы сайта: %s", INDEX_URL);
+            logger.debug(error);
+            message.append(error);
+
+            return message.toString();
         }
 
         logger.debug("Парсинг завершен!");
+
+        message.append("Обработано страниц: ")
+                .append(countPages);
+
+        return message.toString();
     }
 
     private static Map<User, Set<Comment>> parsingTopicPage(String url, UserService userService) {
@@ -113,11 +129,23 @@ public class Parser {
 
         try {
 
-            Document document = Jsoup.connect(url).timeout(0).get();
+            WebDriver webDriver = new FirefoxDriver();
+            webDriver.get(url);
+            while (true){
+                WebElement element = webDriver.findElement(By.className("b-comments__next"));
+                if ("display: none;".equals(element.getAttribute("style")))
+                    break;
+                else {
+                    element.click();
+                    webDriver.wait(1000);
+                }
+            }
+            //Document document = Jsoup.connect(url).timeout(0).get();
             //stub
             //Document document = Jsoup.parse(new File("C:/1/java/Statistics/src/main/resources/template/topic.html"), "UTF-8");
 
-            Elements elements = document.getElementsByClass(CLASSNAME_USER);
+            //Elements elements = document.getElementsByClass(CLASSNAME_USER);
+            List<WebElement> elements = webDriver.findElements(By.className(CLASSNAME_USER));
 
             for (Element elementComment : elements) {
 
@@ -166,53 +194,55 @@ public class Parser {
         } catch (IOException e) {
             logger.debug(String.format("Ошибка парсинга страницы: %s", e.getMessage()));
             return null;
+        } catch (InterruptedException e) {
+            logger.debug(String.format("Ошибка парсинга страницы: %s", e.getMessage()));
+            return null;
         }
 
         return result;
     }
 
     @Transactional
-    private static boolean saveData(UserService userService, TopicService topicService, CommentService commentService, Topic topic, Map<User, Set<Comment>> map){
+    private static boolean saveData(UserService userService, TopicService topicService, CommentService commentService, Topic topic, Map<User, Set<Comment>> map) {
         logger.debug(LogUtil.getMethodName());
 
-        topic = topicService.save(topic);
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        session.beginTransaction();
 
-        for (Map.Entry<User, Set<Comment>> entry : map.entrySet()){
+        topic = (Topic) session.merge(topic);
+        //topic = topicService.save(topic);
+
+        for (Map.Entry<User, Set<Comment>> entry : map.entrySet()) {
             logger.debug(String.format("Обрабатываем данные пользователя %s", entry.getKey()));
 
             User user = entry.getKey();
-            user = userService.findOrCreate(user.getUsername(), user.getProfile());
+            user = userService.findOrCreate(session, user.getUsername(), user.getProfile());
             //getUserRating(user);
-            //
 
-            for (Comment comment : entry.getValue()){
+            for (Comment comment : entry.getValue()) {
                 logger.debug(String.format("Комментарий id: %d", comment.getCommentId()));
 
+                comment.setTopic(topic);
+                comment.setUser(user);
 //                topic.addComment(comment);
-                //comment.setTopic(topic);
-                //comment.setUser(user);
-                user.getComments().add(comment);
-                topic.getComments().add(comment);
-//                commentService.save(comment); //!!!
+                //user.getComments().add(comment);
+                //topic.getComments().add(comment);
+
+//                session.saveOrUpdate(comment);
+                commentService.save(session, comment);
             }
             //user = userService.save(user);
-            topic = topicService.save(topic);
+            //topic = topicService.save(topic);
         }
 
-        map = null;
+        logger.debug(String.format("Завершено сохранение данных топика %s.", topic.getTopicId()));
 
-        for (Comment comment : topic.getComments())
-            System.out.println(comment);
-
-        topic = topicService.save(topic);
-        logger.debug(topic.toString());
-
-        logger.debug("Завершено сохранение данных топика %s.", topic.getTopicId());
-
+        session.getTransaction().commit();
+        session.close();
         return true;
     }
 
-    public static void getUserRating(User user){
+    public static void getUserRating(User user) {
         logger.debug(LogUtil.getMethodName());
         logger.debug(String.format("Refreshing user: %s", user.getUsername()));
 

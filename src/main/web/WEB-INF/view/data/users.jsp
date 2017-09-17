@@ -48,10 +48,16 @@
                     <table class="table table-striped table-bordered table-text wam-margin-top-2 dataTable no-footer ">
                         <thead>
                         <tr>
-                            <td onclick="location.href='?sort=username,${sortDirection}';" class="wam-cursor">Имя пользователя</td>
+                            <td onclick="location.href='?sort=username,${sortDirection}';" class="wam-cursor">Имя
+                                пользователя
+                            </td>
                             <td onclick="location.href='?sort=rating,${sortDirection}';" class="wam-cursor">Рейтинг</td>
-                            <td onclick="location.href='?sort=countWrittenTopics,${sortDirection}';" class="wam-cursor">Кол-во топиков</td>
-                            <td onclick="location.href='?sort=countComments,${sortDirection}';" class="wam-cursor">Кол-во комментариев</td>
+                            <td onclick="location.href='?sort=countWrittenTopics,${sortDirection}';" class="wam-cursor">
+                                Кол-во топиков
+                            </td>
+                            <td onclick="location.href='?sort=countComments,${sortDirection}';" class="wam-cursor">
+                                Кол-во комментариев
+                            </td>
                         </tr>
                         </thead>
                         <tbody>
@@ -67,15 +73,32 @@
                         </tbody>
                     </table>
                     <div class="pagination">
-                        <a href="?page=${currentPage - 1}" class="prevLink">Предыдушая страница</a>
-                        <a href="?page=1" class="step">1</a>
-                        <span class="step gap">..</span>
-                        <a href="?page=2" class="step">5</a>
-                        <span class="currentStep">${currentPage}</span>
-                        <a href="?page=3" class="step">6</a>
-                        <a href="?page=4" class="step">7</a>
-                        <a href="?page=5" class="step">3065</a>
-                        <a href="?page=${currentPage + 1}" class="nextLink">Следующая страница</a>
+                        <li class="paginate_button previous ${currentPage > 1 ? '' : 'disabled'} " id="stats_previous">
+                            <a href="?page=1&sort=${sort}">Первая</a>
+                        </li>
+
+                        <c:if test='${currentPage > 3}'>
+                            <li class="paginate_button disabled"><span>...</span></li>
+                        </c:if>
+
+
+                        <c:if test='${currentPage > 2}'>
+                            <li class="paginate_button"><a
+                                    href="?page=${currentPage - 1}&sort=${sort}">${currentPage - 1}</a></li>
+                        </c:if>
+
+                        <li class="paginate_button active"><span>${currentPage}</span></li>
+
+                        <c:if test='${totalPage - currentPage >= 2}'>
+                            <li class="paginate_button"><a
+                                    href="?page=${currentPage + 1}&sort=${sort}">${currentPage + 1}</a></li>
+                        </c:if>
+                        <c:if test='${totalPage - currentPage >= 3}'>
+                            <li class="paginate_button disabled"><span>...</span></li>
+                        </c:if>
+                        <c:if test='${currentPage < totalPage}'>
+                            <li class="paginate_button"><a href="?page=${totalPage}&sort=${sort}">Последняя</a></li>
+                        </c:if>
                     </div>
                 </div>
             </div>

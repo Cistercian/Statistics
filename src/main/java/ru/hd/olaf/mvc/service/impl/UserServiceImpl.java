@@ -1,11 +1,12 @@
 package ru.hd.olaf.mvc.service.impl;
 
 import com.google.common.collect.Lists;
+import org.hibernate.Query;
+import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,13 +40,25 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-    public User findOrCreate(String username, String profile) {
+    public User findOrCreate(Session session, String username, String profile) {
         logger.debug(LogUtil.getMethodName());
         logger.debug(String.format("Ищем в БД пользователя: %s", username));
 
-        List<User> users = Lists.newArrayList(userRepository.findByUsername(username));
+        Query query = session.createQuery("SELECT u FROM User u WHERE u.username = :username");
+        query.setString("username", username);
 
-        return users != null && users.size() > 0 ? users.get(0) : new User(username, profile);
+        List<User> users = (List<User>) query.list();
+
+        User user;
+        if (users.size() == 0) {
+            user = new User(username, profile);
+            session.save(user);
+        } else
+            user = users.get(0);
+
+        return user;
+//        List<User> users = Lists.newArrayList(userRepository.findByUsername(username));
+//        return users != null && users.size() > 0 ? users.get(0) : new User(username, profile);
     }
 
     public long getTotalCount() {

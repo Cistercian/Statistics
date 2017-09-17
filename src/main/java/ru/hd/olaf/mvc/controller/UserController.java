@@ -3,6 +3,7 @@ package ru.hd.olaf.mvc.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
@@ -39,18 +40,45 @@ public class UserController {
     public String getUsersPage(Model model, Pageable pageable){
         logger.debug(LogUtil.getMethodName());
 
-        model.addAttribute("currentPage", pageable.getPageNumber());
+//        model.addAttribute("currentPage", pageable.getPageNumber());
+//        String sortDirection = "DESC";
+//        if (pageable.getSort() != null) {
+//            Iterator<Sort.Order> iterator = pageable.getSort().iterator();
+//            sortDirection = iterator.hasNext() ? iterator.next().getDirection().name() : sortDirection;
+//        }
+//
+//        sortDirection = "DESC".equalsIgnoreCase(sortDirection) ? "ASC" : "DESC";
+//        model.addAttribute("sortDirection", sortDirection);
 
         String sortDirection = "DESC";
+        String property = "";
         if (pageable.getSort() != null) {
             Iterator<Sort.Order> iterator = pageable.getSort().iterator();
-            sortDirection = iterator.hasNext() ? iterator.next().getDirection().name() : sortDirection;
+            if (iterator.hasNext()) {
+                Sort.Order order = iterator.next();
+
+                sortDirection = order.getDirection().name();
+                property = order.getProperty();
+            }
         }
+        model.addAttribute("sort", property + "," + sortDirection);
 
         sortDirection = "DESC".equalsIgnoreCase(sortDirection) ? "ASC" : "DESC";
         model.addAttribute("sortDirection", sortDirection);
 
-        List<UserSortable> users = userService.getUsers(pageable).getContent();
+        Pageable pageSetting = new PageRequest(
+                pageable.getPageNumber(),
+                10,
+                (pageable.getSort() != null ?
+                        pageable.getSort() :
+                        new Sort(Sort.Direction.DESC, "id")));
+
+        model.addAttribute("currentPage", pageable.getPageNumber() >= 0 ? pageable.getPageNumber() : 1);
+
+        int totalPage = (int) (userService.getTotalCount() / 10) - 1;
+        model.addAttribute("totalPage", totalPage);
+
+        List<UserSortable> users = userService.getUsers(pageSetting).getContent();
         model.addAttribute("users", users);
 
         return "data/users";

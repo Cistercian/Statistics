@@ -93,7 +93,6 @@ public class DataConfig {
         jpaProperties.put("hibernate.connection.characterEncoding","utf8");
         jpaProperties.put("hibernate.connection.useUnicode","true");
 
-
         emf.setJpaProperties(jpaProperties);
         return emf;
     }

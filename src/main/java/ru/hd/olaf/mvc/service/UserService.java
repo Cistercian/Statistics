@@ -1,5 +1,6 @@
 package ru.hd.olaf.mvc.service;
 
+import org.hibernate.Session;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import ru.hd.olaf.entities.User;
@@ -16,7 +17,7 @@ public interface UserService {
 
     User save(User user);
 
-    User findOrCreate(String username, String profile);
+    User findOrCreate(Session session, String username, String profile);
 
     long getTotalCount();
 

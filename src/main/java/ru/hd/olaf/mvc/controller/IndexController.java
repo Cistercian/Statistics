@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import ru.hd.olaf.entities.User;
 import ru.hd.olaf.mvc.service.CommentService;
 import ru.hd.olaf.mvc.service.TopicService;
@@ -47,10 +48,10 @@ public class IndexController {
     }
 
     @RequestMapping(value = "/testParsing", method = RequestMethod.GET)
-    public void testParsing(){
+    public @ResponseBody String testParsing(){
         logger.debug(LogUtil.getMethodName());
 
-        Parser.parsingIndexPage(null, userService, topicService, commentService);
+        return Parser.parsingIndexPage(null, userService, topicService, commentService);
     }
 
     @RequestMapping(value = "/refreshUsersRating", method = RequestMethod.GET)
